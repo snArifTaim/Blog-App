@@ -31,15 +31,21 @@ const PostCard = ({ post, onPress }) => {
                 </Text>
                 <TouchableOpacity onPress={toggleFavorite} hitSlop={{ top: 10, bottom: 10, left: 10, right: 10 }}>
                     <Ionicons
-                        name={isFavorite ? 'star' : 'star-outline'}
+                        name={isFavorite ? 'heart' : 'heart-outline'}
                         size={24}
-                        color={isFavorite ? '#FFD700' : colors.textSecondary}
+                        color={isFavorite ? '#FF4458' : colors.textSecondary}
                     />
                 </TouchableOpacity>
             </View>
             <Text style={[styles.body, { color: colors.textSecondary }]} numberOfLines={2}>
                 {post.body}
             </Text>
+            <View style={styles.likesContainer}>
+                <Ionicons name="heart" size={16} color="#FF4458" />
+                <Text style={[styles.likesText, { color: colors.textSecondary }]}>
+                    {post.likes || 0} {post.likes === 1 ? 'like' : 'likes'}
+                </Text>
+            </View>
         </TouchableOpacity>
     );
 };
@@ -72,6 +78,17 @@ const styles = StyleSheet.create({
     body: {
         fontSize: 14,
         lineHeight: 20,
+        marginBottom: 8,
+    },
+    likesContainer: {
+        flexDirection: 'row',
+        alignItems: 'center',
+        gap: 6,
+        marginTop: 4,
+    },
+    likesText: {
+        fontSize: 14,
+        fontWeight: '500',
     },
 });
 

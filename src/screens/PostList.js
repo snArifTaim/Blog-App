@@ -43,12 +43,9 @@ const PostList = ({ navigation }) => {
     const insets = useSafeAreaInsets();
 
     const renderHeader = () => (
-        <View style={[styles.header, { backgroundColor: colors.card, borderBottomColor: colors.border, paddingTop: insets.top }]}>
+        <View style={[styles.header, { backgroundColor: colors.card, borderBottomColor: colors.border, paddingTop: insets.top + 12 }]}>
             <Text style={[styles.headerTitle, { color: colors.text }]}>Mini Blog</Text>
             <View style={styles.headerActions}>
-                <TouchableOpacity onPress={() => navigation.navigate('Favorites')} style={styles.iconButton}>
-                    <Ionicons name="star" size={24} color={colors.primary} />
-                </TouchableOpacity>
                 <TouchableOpacity onPress={toggleTheme} style={styles.iconButton}>
                     <Ionicons
                         name={theme === 'light' ? 'moon' : 'sunny'}

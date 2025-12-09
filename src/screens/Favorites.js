@@ -13,12 +13,12 @@ const Favorites = ({ navigation }) => {
 
     const renderEmpty = () => (
         <View style={styles.emptyContainer}>
-            <Ionicons name="star-outline" size={64} color={colors.textSecondary} />
+            <Ionicons name="heart-outline" size={64} color={colors.textSecondary} />
             <Text style={[styles.emptyText, { color: colors.textSecondary }]}>
                 No favorite posts yet
             </Text>
             <Text style={[styles.emptySubtext, { color: colors.textSecondary }]}>
-                Tap the star icon on posts to add them here
+                Tap the heart icon on posts to add them here
             </Text>
         </View>
     );
@@ -27,7 +27,7 @@ const Favorites = ({ navigation }) => {
 
     return (
         <View style={[styles.container, { backgroundColor: colors.background }]}>
-            <View style={[styles.header, { backgroundColor: colors.card, borderBottomColor: colors.border, paddingTop: insets.top }]}>
+            <View style={[styles.header, { backgroundColor: colors.card, borderBottomColor: colors.border, paddingTop: insets.top + 12 }]}>
                 <TouchableOpacity onPress={() => navigation.goBack()}>
                     <Ionicons name="arrow-back" size={24} color={colors.text} />
                 </TouchableOpacity>
