@@ -53,7 +53,7 @@ A React Native mobile application built with Expo, Apollo GraphQL, and Context A
 
 3. **Start the development server**:
    
-       npx expo start
+       npx expo start --offline
 
 4. **Run on your device**:
    - Scan the QR code with the Expo Go app (iOS/Android)
@@ -119,3 +119,4 @@ A React Native mobile application built with Expo, Apollo GraphQL, and Context A
 - 🚀 Crafting modern, user-friendly & high-performance mobile apps fast!
 
  🔗 [GitHub](https://github.com/snArifTaim/) [LinkedIn](https://www.linkedin.com/in/sn-arif-dev/)
+
