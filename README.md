@@ -75,11 +75,11 @@ A React Native mobile application built with Expo, Apollo GraphQL, and Context A
 
 | Home | Favorites |
 |-------|----------|
-| ![Home](./branding/screenshots/home.jpg) | ![Favorites](./branding/screenshots/favorites.jpg) |
+| ![Home](./Branding/screenshots/home.jpg) | ![Favorites](./Branding/screenshots/favorites.jpg) |
 
 | Post Details |
 |---------------|
-| ![Post Details](./branding/screenshots/post-details.jpg) |
+| ![Post Details](./Branding/screenshots/post-details.jpg) |
   
   ### Post Details Screen
   - View the full content of a post
