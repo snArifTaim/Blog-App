@@ -2,11 +2,9 @@ import React from 'react';
 import { NavigationContainer } from '@react-navigation/native';
 import { createStackNavigator } from '@react-navigation/stack';
 import { createBottomTabNavigator } from '@react-navigation/bottom-tabs';
-import { Ionicons } from '@expo/vector-icons';
 import PostList from '../screens/PostList';
 import PostDetails from '../screens/PostDetails';
 import Favorites from '../screens/Favorites';
-import { useTheme } from '../context/ThemeContext';
 import CustomTabBar from '../components/CustomTabBar';
 
 const Stack = createStackNavigator();
@@ -21,6 +19,20 @@ const ExploreStack = () => {
             }}
         >
             <Stack.Screen name="PostList" component={PostList} />
+            <Stack.Screen name="PostDetails" component={PostDetails} />
+        </Stack.Navigator>
+    );
+};
+
+// Favorites Stack (Favorites -> PostDetails)
+const FavoritesStack = () => {
+    return (
+        <Stack.Navigator
+            screenOptions={{
+                headerShown: false,
+            }}
+        >
+            <Stack.Screen name="FavoritesList" component={Favorites} />
             <Stack.Screen name="PostDetails" component={PostDetails} />
         </Stack.Navigator>
     );
@@ -41,7 +53,7 @@ const TabNavigator = () => {
             />
             <Tab.Screen
                 name="Favorites"
-                component={Favorites}
+                component={FavoritesStack}
             />
         </Tab.Navigator>
     );

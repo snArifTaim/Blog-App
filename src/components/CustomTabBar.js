@@ -37,10 +37,16 @@ const CustomTabBar = ({ state, descriptors, navigation }) => {
 
                     // Get icon name based on route
                     let iconName;
+                    let label;
                     if (route.name === 'Explore') {
                         iconName = isFocused ? 'document-text' : 'document-text-outline';
+                        label = 'Explore posts';
                     } else if (route.name === 'Favorites') {
                         iconName = isFocused ? 'heart' : 'heart-outline';
+                        label = 'Favorite posts';
+                    } else {
+                        iconName = 'ellipse-outline';
+                        label = route.name;
                     }
 
                     return (
@@ -49,6 +55,9 @@ const CustomTabBar = ({ state, descriptors, navigation }) => {
                             onPress={onPress}
                             style={styles.tabButton}
                             activeOpacity={0.7}
+                            accessibilityRole="tab"
+                            accessibilityState={{ selected: isFocused }}
+                            accessibilityLabel={label}
                         >
                             <View style={[
                                 styles.iconContainer,

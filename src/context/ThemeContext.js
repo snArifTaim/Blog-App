@@ -1,5 +1,6 @@
 import React, { createContext, useState, useContext, useEffect } from 'react';
 import { useColorScheme } from 'react-native';
+import storageService from '../services/storageService';
 
 const ThemeContext = createContext();
 
@@ -34,15 +35,37 @@ export const darkTheme = {
 export const ThemeProvider = ({ children }) => {
   const systemScheme = useColorScheme();
   const [theme, setTheme] = useState(systemScheme === 'dark' ? 'dark' : 'light');
+  const [isLoading, setIsLoading] = useState(true);
 
-  const toggleTheme = () => {
-    setTheme((prev) => (prev === 'light' ? 'dark' : 'light'));
+  // Load theme preference on mount
+  useEffect(() => {
+    const loadTheme = async () => {
+      try {
+        const savedTheme = await storageService.getTheme();
+        if (savedTheme) {
+          setTheme(savedTheme);
+        }
+      } catch (error) {
+        console.error('Failed to load theme:', error);
+      } finally {
+        setIsLoading(false);
+      }
+    };
+
+    loadTheme();
+  }, []);
+
+  const toggleTheme = async () => {
+    const newTheme = theme === 'light' ? 'dark' : 'light';
+    setTheme(newTheme);
+    // Persist theme preference
+    await storageService.saveTheme(newTheme);
   };
 
   const colors = theme === 'light' ? lightTheme : darkTheme;
 
   return (
-    <ThemeContext.Provider value={{ theme, toggleTheme, colors }}>
+    <ThemeContext.Provider value={{ theme, toggleTheme, colors, isLoading }}>
       {children}
     </ThemeContext.Provider>
   );

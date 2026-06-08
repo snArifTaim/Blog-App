@@ -1,4 +1,4 @@
-import React, { useState } from 'react';
+import React, { useState, useEffect, useCallback } from 'react';
 import {
     View,
     FlatList,
@@ -9,38 +9,81 @@ import {
     RefreshControl,
 } from 'react-native';
 import { useSafeAreaInsets } from 'react-native-safe-area-context';
-import { useQuery } from '@apollo/client';
 import { useTheme } from '../context/ThemeContext';
-import { GET_POSTS } from '../apollo/queries';
+import { getPosts } from '../services/mockDataService';
 import PostCard from '../components/PostCard';
 import { Ionicons } from '@expo/vector-icons';
+import eventBus from '../services/eventBus';
+
+const TAB_BAR_HEIGHT = 100; // Floating tab bar height + bottom margin
 
 const PostList = ({ navigation }) => {
     const { colors, toggleTheme, theme } = useTheme();
     const [page, setPage] = useState(1);
+    const [posts, setPosts] = useState([]);
+    const [loading, setLoading] = useState(true);
+    const [error, setError] = useState(null);
+    const [refreshing, setRefreshing] = useState(false);
+    const [hasMore, setHasMore] = useState(true);
     const LIMIT = 10;
 
-    const { data, loading, error, fetchMore, refetch } = useQuery(GET_POSTS, {
-        variables: { page: 1, limit: LIMIT },
-        notifyOnNetworkStatusChange: true,
-    });
+    const fetchPosts = async (pageNum) => {
+        try {
+            setError(null);
+            const result = await getPosts(pageNum, LIMIT);
+            if (pageNum === 1) {
+                setPosts(result.posts);
+            } else {
+                setPosts(prev => [...prev, ...result.posts]);
+            }
+            setHasMore(result.hasMore);
+        } catch (err) {
+            setError(err.message || 'Failed to load posts');
+        } finally {
+            setLoading(false);
+            setRefreshing(false);
+        }
+    };
+
+    useEffect(() => {
+        fetchPosts(1);
+    }, []);
+
+    useEffect(() => {
+        const off = eventBus.on('postLikesUpdated', ({ id, likes }) => {
+            setPosts((prev) => prev.map((p) => (p.id === id ? { ...p, likes } : p)));
+        });
+        return off;
+    }, []);
+
+    useEffect(() => {
+        const offDelta = eventBus.on('postLikesDelta', ({ id, delta }) => {
+            setPosts((prev) => prev.map((p) => (p.id === id ? { ...p, likes: (p.likes || 0) + delta } : p)));
+        });
+        return offDelta;
+    }, []);
 
     const handleLoadMore = () => {
-        if (!loading) {
-            fetchMore({
-                variables: { page: page + 1, limit: LIMIT },
-            }).then(() => {
-                setPage(page + 1);
-            });
+        if (!loading && hasMore) {
+            const nextPage = page + 1;
+            setPage(nextPage);
+            setLoading(true);
+            fetchPosts(nextPage);
         }
     };
 
     const handleRefresh = () => {
+        setRefreshing(true);
         setPage(1);
-        refetch({ page: 1, limit: LIMIT });
+        setHasMore(true);
+        fetchPosts(1);
     };
 
     const insets = useSafeAreaInsets();
+
+    const handlePostPress = useCallback((postId) => {
+        navigation.navigate('PostDetails', { postId });
+    }, [navigation]);
 
     const renderHeader = () => (
         <View style={[styles.header, { backgroundColor: colors.card, borderBottomColor: colors.border, paddingTop: insets.top + 12 }]}>
@@ -58,7 +101,7 @@ const PostList = ({ navigation }) => {
     );
 
     const renderFooter = () => {
-        if (!loading) return null;
+        if (!loading || posts.length === 0) return null;
         return (
             <View style={styles.footer}>
                 <ActivityIndicator size="small" color={colors.primary} />
@@ -73,14 +116,20 @@ const PostList = ({ navigation }) => {
         </View>
     );
 
-    if (error) {
+    const renderItem = useCallback(({ item }) => (
+        <PostCard post={item} onPress={() => handlePostPress(item.id)} />
+    ), [handlePostPress]);
+
+    const keyExtractor = useCallback((item) => item.id, []);
+
+    if (error && posts.length === 0) {
         return (
             <View style={[styles.container, { backgroundColor: colors.background }]}>
                 {renderHeader()}
                 <View style={styles.errorContainer}>
                     <Ionicons name="alert-circle-outline" size={64} color={colors.error} />
                     <Text style={[styles.errorText, { color: colors.error }]}>Error loading posts</Text>
-                    <Text style={[styles.errorMessage, { color: colors.textSecondary }]}>{error.message}</Text>
+                    <Text style={[styles.errorMessage, { color: colors.textSecondary }]}>{error}</Text>
                     <TouchableOpacity
                         style={[styles.retryButton, { backgroundColor: colors.primary }]}
                         onPress={handleRefresh}
@@ -96,18 +145,17 @@ const PostList = ({ navigation }) => {
         <View style={[styles.container, { backgroundColor: colors.background }]}>
             {renderHeader()}
             <FlatList
-                data={data?.posts || []}
-                keyExtractor={(item) => item.id}
-                renderItem={({ item }) => (
-                    <PostCard post={item} onPress={() => navigation.navigate('PostDetails', { postId: item.id })} />
-                )}
+                data={posts}
+                keyExtractor={keyExtractor}
+                renderItem={renderItem}
                 onEndReached={handleLoadMore}
                 onEndReachedThreshold={0.5}
                 ListFooterComponent={renderFooter}
                 ListEmptyComponent={!loading ? renderEmpty : null}
+                contentContainerStyle={{ paddingBottom: TAB_BAR_HEIGHT }}
                 refreshControl={
                     <RefreshControl
-                        refreshing={loading && page === 1}
+                        refreshing={refreshing}
                         onRefresh={handleRefresh}
                         tintColor={colors.primary}
                     />

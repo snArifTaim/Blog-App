@@ -1,15 +1,45 @@
-import React from 'react';
-import { View, FlatList, Text, StyleSheet, TouchableOpacity } from 'react-native';
+import React, { useState, useCallback } from 'react';
+import { View, FlatList, Text, StyleSheet } from 'react-native';
+import { useFocusEffect } from '@react-navigation/native';
 import { useSafeAreaInsets } from 'react-native-safe-area-context';
-import { useReactiveVar } from '@apollo/client';
 import { useTheme } from '../context/ThemeContext';
-import { favoritePostsVar } from '../apollo/client';
+import { useFavorites } from '../context/FavoritesContext';
+import { getPost } from '../services/mockDataService';
 import PostCard from '../components/PostCard';
 import { Ionicons } from '@expo/vector-icons';
 
+const TAB_BAR_HEIGHT = 100; // Floating tab bar height + bottom margin
+
 const Favorites = ({ navigation }) => {
     const { colors } = useTheme();
-    const favorites = useReactiveVar(favoritePostsVar);
+    const { favoriteIds } = useFavorites();
+    const [favoritePosts, setFavoritePosts] = useState([]);
+    const [loading, setLoading] = useState(false);
+
+    // Reload favorite posts when screen is focused or favoriteIds change
+    useFocusEffect(
+        useCallback(() => {
+            loadFavorites();
+        }, [favoriteIds])
+    );
+
+    const loadFavorites = async () => {
+        setLoading(true);
+        try {
+            if (favoriteIds.length === 0) {
+                setFavoritePosts([]);
+                return;
+            }
+
+            // Fetch each favorited post by ID (no wasteful full-scan)
+            const postPromises = favoriteIds.map((id) => getPost(id));
+            const posts = await Promise.all(postPromises);
+            // Filter out any null results (deleted posts)
+            setFavoritePosts(posts.filter(Boolean));
+        } finally {
+            setLoading(false);
+        }
+    };
 
     const renderEmpty = () => (
         <View style={styles.emptyContainer}>
@@ -28,14 +58,11 @@ const Favorites = ({ navigation }) => {
     return (
         <View style={[styles.container, { backgroundColor: colors.background }]}>
             <View style={[styles.header, { backgroundColor: colors.card, borderBottomColor: colors.border, paddingTop: insets.top + 12 }]}>
-                <TouchableOpacity onPress={() => navigation.goBack()}>
-                    <Ionicons name="arrow-back" size={24} color={colors.text} />
-                </TouchableOpacity>
                 <Text style={[styles.headerTitle, { color: colors.text }]}>Favorites</Text>
                 <View style={{ width: 24 }} />
             </View>
             <FlatList
-                data={favorites}
+                data={favoritePosts}
                 keyExtractor={(item) => item.id}
                 renderItem={({ item }) => (
                     <PostCard
@@ -44,7 +71,12 @@ const Favorites = ({ navigation }) => {
                     />
                 )}
                 ListEmptyComponent={renderEmpty}
-                contentContainerStyle={favorites.length === 0 ? styles.emptyList : null}
+                contentContainerStyle={[
+                    { paddingBottom: TAB_BAR_HEIGHT },
+                    favoritePosts.length === 0 ? styles.emptyList : null,
+                ]}
+                refreshing={loading}
+                onRefresh={loadFavorites}
             />
         </View>
     );

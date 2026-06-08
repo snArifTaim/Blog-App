@@ -1,22 +1,16 @@
 import React from 'react';
 import { View, Text, TouchableOpacity, StyleSheet } from 'react-native';
 import { useTheme } from '../context/ThemeContext';
-import { useReactiveVar } from '@apollo/client';
-import { favoritePostsVar } from '../apollo/client';
+import { useFavorites } from '../context/FavoritesContext';
 import { Ionicons } from '@expo/vector-icons';
 
 const PostCard = ({ post, onPress }) => {
     const { colors } = useTheme();
-    const favorites = useReactiveVar(favoritePostsVar);
-    const isFavorite = favorites.some((p) => p.id === post.id);
+    const { isFavorite, toggleFavorite } = useFavorites();
+    const isFav = isFavorite(post.id);
 
-    const toggleFavorite = () => {
-        const currentFavorites = favoritePostsVar();
-        if (isFavorite) {
-            favoritePostsVar(currentFavorites.filter((p) => p.id !== post.id));
-        } else {
-            favoritePostsVar([...currentFavorites, post]);
-        }
+    const handleToggleFavorite = () => {
+        toggleFavorite(post.id);
     };
 
     return (
@@ -29,11 +23,11 @@ const PostCard = ({ post, onPress }) => {
                 <Text style={[styles.title, { color: colors.text }]} numberOfLines={1}>
                     {post.title}
                 </Text>
-                <TouchableOpacity onPress={toggleFavorite} hitSlop={{ top: 10, bottom: 10, left: 10, right: 10 }}>
+                <TouchableOpacity onPress={handleToggleFavorite} hitSlop={{ top: 10, bottom: 10, left: 10, right: 10 }}>
                     <Ionicons
-                        name={isFavorite ? 'heart' : 'heart-outline'}
+                        name={isFav ? 'heart' : 'heart-outline'}
                         size={24}
-                        color={isFavorite ? '#FF4458' : colors.textSecondary}
+                        color={isFav ? '#FF4458' : colors.textSecondary}
                     />
                 </TouchableOpacity>
             </View>
@@ -49,6 +43,15 @@ const PostCard = ({ post, onPress }) => {
         </TouchableOpacity>
     );
 };
+
+// Memoize component to prevent unnecessary re-renders from parent
+// Context changes (favorites) bypass memo and re-render correctly
+const MemoizedPostCard = React.memo(PostCard, (prevProps, nextProps) => {
+    return (
+        prevProps.post.id === nextProps.post.id &&
+        prevProps.post.likes === nextProps.post.likes
+    );
+});
 
 const styles = StyleSheet.create({
     card: {
@@ -92,4 +95,4 @@ const styles = StyleSheet.create({
     },
 });
 
-export default PostCard;
+export default MemoizedPostCard;

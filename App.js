@@ -1,20 +1,28 @@
 import React from 'react';
-import { ApolloProvider } from '@apollo/client';
 import { SafeAreaView } from 'react-native-safe-area-context';
-import { ThemeProvider } from './src/context/ThemeContext';
-import client from './src/apollo/client';
+import { ThemeProvider, useTheme } from './src/context/ThemeContext';
+import { FavoritesProvider } from './src/context/FavoritesContext';
 import AppNavigator from './src/navigation/AppNavigator';
 import { StatusBar } from 'expo-status-bar';
 
+// Inner component that can access theme context for SafeAreaView background
+function AppContent() {
+  const { colors, theme } = useTheme();
+
+  return (
+    <SafeAreaView style={{ flex: 1, backgroundColor: colors.background }}>
+      <StatusBar style={theme === 'dark' ? 'light' : 'dark'} />
+      <AppNavigator />
+    </SafeAreaView>
+  );
+}
+
 export default function App() {
   return (
-    <ApolloProvider client={client}>
-      <SafeAreaView style={{ flex: 1 }}>
-        <ThemeProvider>
-          <StatusBar style="auto" />
-          <AppNavigator />
-        </ThemeProvider>
-      </SafeAreaView>
-    </ApolloProvider>
+    <ThemeProvider>
+      <FavoritesProvider>
+        <AppContent />
+      </FavoritesProvider>
+    </ThemeProvider>
   );
 }

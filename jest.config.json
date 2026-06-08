@@ -1,0 +1,18 @@
+{
+  "preset": "react-native",
+  "setupFilesAfterEnv": ["<rootDir>/__tests__/setup.js"],
+  "testEnvironment": "node",
+  "transformIgnorePatterns": [
+    "node_modules/(?!(expo|expo-font|expo-asset|@react-native|@react-navigation|@expo|react-native-gesture-handler|react-native-screens|react-native-safe-area-context)/)"
+  ],
+  "moduleFileExtensions": ["ts", "tsx", "js", "jsx", "json", "node"],
+  "collectCoverageFrom": [
+    "src/**/*.{js,jsx}",
+    "!src/**/*.test.{js,jsx}",
+    "!src/**/index.{js,jsx}"
+  ],
+  "testMatch": [
+    "**/__tests__/**/*.test.js",
+    "**/?(*.)+(spec|test).js"
+  ]
+}

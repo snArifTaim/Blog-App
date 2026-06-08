@@ -70,6 +70,16 @@ A React Native mobile application built with Expo, Apollo GraphQL, and Context A
   - Tap the **star icon** in the header to view your favorites
   - **Pull down** to refresh the list
   - **Scroll to the bottom** to load more posts
+
+  ## 📸 Screenshots
+
+| Home | Favorites |
+|-------|----------|
+| ![Home](./branding/screenshots/home.jpg) | ![Favorites](./branding/screenshots/favorites.jpg) |
+
+| Post Details |
+|---------------|
+| ![Post Details](./branding/screenshots/post-details.jpg) |
   
   ### Post Details Screen
   - View the full content of a post
